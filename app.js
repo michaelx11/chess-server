@@ -1,6 +1,8 @@
 var express = require('express');
 var http = require('http');
 var exec = require('child_process').exec;
+var Firebase = require('firebase');
+var root = new Firebase("https://michaelx-metadata.firebaseio.com")
 
 var app = express();
 
@@ -68,6 +70,62 @@ function welcomeDisplay(req, res) {
   res.send("Welcome to bot.haus, we're currently running a chess analyzer. Try hitting /analyze and /move for more instructions!");
 }
 
+function getImage(req, res) {
+  root.child('servers').child('9470m').once('value', function(data) {
+    var ipObj = data.val();
+    var options = {
+      host: ipObj.ip,
+      path: '/getimage'
+    };
+    try {
+      http.request(options, function(response) {
+        var bodyChunks = [];
+        response.on('data', function(chunk) {
+          bodyChunks.push(chunk);
+        });
+
+        response.on('end', function() {
+          var body = Buffer.concat(bodyChunks);
+          res.writeHead(200, {'Content-Type': 'jpeg'} );
+          res.write(body);
+          res.end();
+        });
+      }).end();
+    } catch(e) {
+      res.send(e);
+    }
+  });
+}
+
+function getEdgeImage(req, res) {
+  root.child('servers').child('9470m').once('value', function(data) {
+    var ipObj = data.val();
+    var options = {
+      host: ipObj.ip,
+      path: '/getedgeimage'
+    };
+    try {
+      http.request(options, function(response) {
+        var bodyChunks = [];
+        response.on('data', function(chunk) {
+          bodyChunks.push(chunk);
+        });
+
+        response.on('end', function() {
+          var body = Buffer.concat(bodyChunks);
+          res.writeHead(200, {'Content-Type': 'jpeg'} );
+          res.write(body);
+          res.end();
+        });
+      }).end();
+    } catch(e) {
+      res.send(e);
+    }
+  });
+}
+
+app.get('/getedgeimage', getEdgeImage);
+app.get('/getimage', getImage);
 app.get('/analyze', analyzePosition);
 app.get('/move', makeMove);
 app.get('/', welcomeDisplay);
