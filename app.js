@@ -50,6 +50,24 @@ function analyzePosition(req, res) {
   }
 }
 
+function inferMove(req, res) {
+  if (req.query.fen && req.query.heatmap) {
+    console.log(req.query.heatmap);
+    console.log(req.query.fen);
+    var command = 'python infer_move.py ' + req.query.heatmap + ' ' + req.query.fen;
+    exec(command, function(error, stdout, stderr) {
+      if (error || stderr) {
+        console.log(stderr);
+        res.send('ERROR: ' + stderr);
+      } else {
+        res.send(stdout);
+      }
+    });
+  } else{
+    res.send('Missing FEN or heatmap string!');
+  }
+}
+
 function makeMove(req, res) {
   if (req.query.fen && req.query.move) {
     var command = 'python make_move.py ' + req.query.fen + " " + req.query.move;
@@ -70,12 +88,12 @@ function welcomeDisplay(req, res) {
   res.send("Welcome to bot.haus, we're currently running a chess analyzer. Try hitting /analyze and /move for more instructions!");
 }
 
-function getImage(req, res) {
+function forwardImageReq(imageEndpoint, req, res) {
   root.child('servers').child('9470m').once('value', function(data) {
     var ipObj = data.val();
     var options = {
       host: ipObj.ip,
-      path: '/getimage'
+      path: imageEndpoint
     };
     try {
       http.request(options, function(response) {
@@ -95,38 +113,28 @@ function getImage(req, res) {
       res.send(e);
     }
   });
+
+}
+
+function getImage(req, res) {
+  forwardImageReq("/getimage", req, res);
 }
 
 function getEdgeImage(req, res) {
-  root.child('servers').child('9470m').once('value', function(data) {
-    var ipObj = data.val();
-    var options = {
-      host: ipObj.ip,
-      path: '/getedgeimage'
-    };
-    try {
-      http.request(options, function(response) {
-        var bodyChunks = [];
-        response.on('data', function(chunk) {
-          bodyChunks.push(chunk);
-        });
-
-        response.on('end', function() {
-          var body = Buffer.concat(bodyChunks);
-          res.writeHead(200, {'Content-Type': 'jpeg'} );
-          res.write(body);
-          res.end();
-        });
-      }).end();
-    } catch(e) {
-      res.send(e);
-    }
-  });
+  forwardImageReq("/getedgeimage", req, res);
 }
 
-app.get('/getedgeimage', getEdgeImage);
-app.get('/getimage', getImage);
+function getBorderImage(req, res) {
+  forwardImageReq("/getborderimage", req, res);
+}
+
+
+
+//app.get('/getborderimage', getBorderImage);
+//app.get('/getedgeimage', getEdgeImage);
+//app.get('/getimage', getImage);
 app.get('/analyze', analyzePosition);
+app.get('/infer', inferMove);
 app.get('/move', makeMove);
 app.get('/', welcomeDisplay);
 

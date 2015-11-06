@@ -9,7 +9,7 @@ if len(sys.argv) < 3 or 'help' in sys.argv[1]:
     sys.exit(0);
 
 fen = sys.argv[1].strip()
-move = sys.argv[2].strip()
+move = sys.argv[2].strip().replace('_','')
 
 # Throws error if fen is not valid
 try :

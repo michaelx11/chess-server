@@ -19,7 +19,7 @@ except:
     sys.exit(1)
 
 ### Interface with Stockfish
-searcher = Engine(movetime=1500)
+searcher = Engine(movetime=100)
 searcher.setposition_fen(fen)
 bestmove = searcher.bestmove_time()['move']
 

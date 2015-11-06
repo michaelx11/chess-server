@@ -9,10 +9,10 @@ if len(sys.argv) < 3 or 'help' in sys.argv[1]:
     sys.exit(0);
 
 heatmapStr = sys.argv[1].strip()
+
+chunks = heatmapStr.split(';')
 fen = sys.argv[2].strip()
 
-### PARSE INTO A MATRIX
-chunks = heatmapStr.split(';')
 values = []
 for chunk in chunks:
     for val in chunk.split(' '):
@@ -49,8 +49,6 @@ def tryMoveAndEval(move):
     for i in range(8):
         for u in range(8):
             if originalBoard[ind(i,u)] != tempBoard[ind(i,u)]:
-                if alignedMap[i][u] < 7.7:
-                    return 0
                 score += alignedMap[i][u]
     return score
 
